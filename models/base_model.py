@@ -216,7 +216,7 @@ class BaseModel(ABC):
                     try:
                         net.load_state_dict(state_dict, strict=True)
                     except Exception as e:
-                        print(e)
+                        # print(e)
                         pass
                 else:
                     print('No model weight file:', load_path, 'initialize model without pre-trained weights.')

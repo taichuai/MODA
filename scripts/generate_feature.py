@@ -34,12 +34,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--config',          type=str, default='configs/feature/HDTF.yaml', 
                     help='[!] Override the below parameters from config with cmd args')
 parser.add_argument('--meta_dir',       type=str, default='assets/data/meta_dir')
-parser.add_argument('--test_person',    type=str, default='Cathy	000')
+parser.add_argument('--test_person',    type=str, default='Cathy')
 parser.add_argument('--force_up',       default=True)
 parser.add_argument('--driven_audios',  default='assets/data/test_audios')
 parser.add_argument('--out_dir',        type=str, default='results/HDTF-LSP/Render')
 parser.add_argument('--a2f_ckpt_fp',    type=str, default='assets/ckpts/MODA.pkl')
-parser.add_argument('--refiner_ckpt_fp', type=str, default='assets/ckpts/FoCo.pkl')
+parser.add_argument('--refiner_ckpt_fp', type=str, default='assets/ckpts/FaCo.pkl')
 
 
 args = parser.parse_args()

@@ -81,9 +81,8 @@ class FaCoModel(BaseModel):
         """ inference process """
         b, seq, t_dim = x_in_lip.shape[:3]
 
-        x_in = torch.cat([
-            x_in_lip.reshape((b, seq, -1)), 
-            x_in_eye.reshape((b, seq, -1))], dim=-1).to(self.device)
+        x_in_lip = x_in_lip.reshape((b, seq, -1)).to(self.device)
+        x_in_eye = x_in_eye.reshape((b, seq, -1)).to(self.device)
         
         if self.opt.subject_head == 'onehot':
             one_hot_labels = np.eye(n_subjects)
@@ -97,7 +96,7 @@ class FaCoModel(BaseModel):
             sub_info = sub_info.reshape(sub_info.shape[0], -1).to(self.device)
         
         with torch.no_grad():      
-            fake_pred = self.FaCo_G(x_in, sub_info) 
+            fake_pred = self.FaCo_G(x_in_lip, x_in_eye, sub_info) 
         return fake_pred.detach().squeeze().cpu().numpy()
 
     @torch.no_grad()
