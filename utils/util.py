@@ -2,6 +2,7 @@ import os
 import cv2
 import yaml
 import torch
+import argparse
 import subprocess
 import numpy as np
 import pandas as pd
@@ -46,6 +47,21 @@ def tensor2im(image_tensor, imtype=np.uint8, normalize=True):
     return image_numpy.astype(imtype)
 
 
+def im2tensor(image, normalize=True):
+    if isinstance(image, list):
+        image_tensor = []
+        for i in range(len(image)):
+            image_tensor.append(im2tensor(image[i], normalize))
+        return image_tensor
+    if normalize:
+        mean, std = 0.5, 0.5
+        image_tensor = torch.from_numpy((np.transpose(image, (2, 0, 1)) / 255.0  - mean) / std).float()
+    else:
+        image_tensor = torch.from_numpy(np.transpose(image, (2, 1, 0)) / 255.0).float()
+    
+    return image_tensor
+
+
 def add_dummy_to_tensor(tensors, add_size=0):
     if add_size == 0 or tensors is None: return tensors
     if isinstance(tensors, list):
@@ -56,6 +72,7 @@ def add_dummy_to_tensor(tensors, add_size=0):
         tensors = torch.cat([dummy, tensors])
     return tensors
 
+
 def remove_dummy_from_tensor(tensors, remove_size=0):
     if remove_size == 0 or tensors is None: return tensors
     if isinstance(tensors, list):
@@ -65,9 +82,11 @@ def remove_dummy_from_tensor(tensors, remove_size=0):
         tensors = tensors[remove_size:]
     return tensors
 
+
 def save_image(image_numpy, image_path):
     image_pil = Image.fromarray(image_numpy)
     image_pil.save(image_path)
+
 
 def print_numpy(x, val=True, shp=False):
     x = x.astype(np.float64)
@@ -78,12 +97,14 @@ def print_numpy(x, val=True, shp=False):
         print('mean = %3.3f, min = %3.3f, max = %3.3f, median = %3.3f, std=%3.3f' % (
             np.mean(x), np.min(x), np.max(x), np.median(x), np.std(x)))
 
+
 def mkdirs(paths):
     if isinstance(paths, list) and not isinstance(paths, str):
         for path in paths:
             mkdir(path)
     else:
         mkdir(paths)
+
 
 def mkdir(path):
     if not os.path.exists(path):
@@ -97,7 +118,7 @@ def parse_config(cfg_fp):
 
 
 def assign_attributes(a_from, a_to):
-    for k, v in a_from.items():
+    for k, v in vars(a_from).items():
         if hasattr(a_to, k):
             setattr(a_to, k, v)
 

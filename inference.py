@@ -24,12 +24,13 @@ def gen_feature(audio_fp_or_dir, cfg, out_dir, n_sample):
         print('#'*20)
 
         cmd_str = f'python scripts/generate_feature.py --config {cfg.feat.cfg_fp} ' + \
-                f'--data_dir {cfg.feat.meta_dir} --test_person {cfg.person_name} ' + \
+                f'--meta_dir {cfg.feat.meta_dir} --test_person {cfg.person_name} ' + \
                 f'--driven_audios {audio_files_str} --out_dir {t_out_dir} ' + \
                 f'--a2f_ckpt_fp {cfg.feat.a2f_ckpt_fp} ' + \
                 f'--refiner_ckpt_fp {cfg.feat.refiner_ckpt_fp} '
         
         os.system(cmd_str)
+        out_dir_lst.append(os.path.join(t_out_dir, cfg.person_name))
     
     return out_dir_lst
 
@@ -37,7 +38,7 @@ def gen_feature(audio_fp_or_dir, cfg, out_dir, n_sample):
 def render_video(input_dirs, output_dir, cfg):
     for (idx, input_dir) in enumerate(input_dirs):
         print('#'*20)
-        print('#'*5, f'Processing [{idx}/{input_dir}]')
+        print('#'*5, f'Processing [{idx}/{len(input_dirs)} => {input_dir}]')
         print('#'*20)
 
         cmd_str = f'python scripts/generate_video.py --config {cfg.renderer.cfg_fp} ' + \
@@ -54,6 +55,8 @@ parser.add_argument('--output_dir',      type=str, default='results')
 parser.add_argument('--n_sample',        type=int, default=2)
 
 args = parser.parse_args()
+
+os.system('export PYTHONPATH=.')
 
 with open(args.person_config, 'r') as fid:
     person_cfg = EasyDict(yaml.load(fid))

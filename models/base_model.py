@@ -35,12 +35,11 @@ class BaseModel(ABC):
         self.gpu_ids = opt.gpu_ids
         self.isTrain = opt.isTrain
         # get device name: CPU or GPU
-        # if self.gpu_ids == '-1':
-        #     self.device = torch.device('cpu')
-        #     self.gpu_ids = opt.gpu_ids == []
-        # else:
-        #     self.device = torch.device('cuda:{}'.format(self.gpu_ids[0]))
-        self.device = torch.device('cuda:{}'.format(self.gpu_ids[0])) if len(self.gpu_ids) > 0 else torch.device('cpu')  
+        if str(self.gpu_ids) == '-1' or len(self.gpu_ids) == 0 or str(self.gpu_ids[0]) == '-1':
+            self.device = torch.device('cpu')
+            self.gpu_ids = opt.gpu_ids == []
+        else:
+            self.device = torch.device('cuda:{}'.format(self.gpu_ids[0]))
         
         self.save_dir = os.path.join(opt.checkpoints_dir, opt.task, opt.name)  # save all the checkpoints to save_dir
         # torch speed up training
@@ -203,48 +202,26 @@ class BaseModel(ABC):
         """
         for name in self.model_names:
             if isinstance(name, str):
-                if epoch[-3:] == 'pkl':
+                if epoch[-3:] in ('pkl', 'pth'):
                     load_path = epoch
                 else:
                     load_filename = '%s_%s.pkl' % (epoch, name)
                     load_path = os.path.join(self.save_dir, load_filename)
                 net = getattr(self, name)
-#                if isinstance(net, torch.nn.DataParallel):
-#                    net = net.module
                 if os.path.exists(load_path):
                     state_dict = torch.load(load_path, map_location=str(self.device))
-                    if self.device == torch.device('cpu'):
-                        for key in list(state_dict.keys()):
-                            state_dict[key[7:]] = state_dict.pop(key)
                     if hasattr(state_dict, '_metadata'):
                         del state_dict._metadata
                     print('loading the model from %s' % load_path)
                     try:
                         net.load_state_dict(state_dict, strict=True)
                     except Exception as e:
-                        # print(e)
+                        print(e)
                         pass
                 else:
                     print('No model weight file:', load_path, 'initialize model without pre-trained weights.')
                     if self.isTrain == False:
                         raise ValueError('We are now in inference process, no pre-trained model found! Check the model checkpoint!')
-                        
-                    
-#                if isinstance(net, torch.nn.DataParallel):
-#                    net = net.module
-                
-                # if you are using PyTorch newer than 0.4 (e.g., built from
-                # GitHub source), you can remove str() on self.device
-                
-#                state_dict = torch.load(load_path, map_location=str(self.device))
-#                if hasattr(state_dict, '_metadata'):
-#                    del state_dict._metadata
-#
-#                # patch InstanceNorm checkpoints prior to 0.4
-#                for key in list(state_dict.keys()):  # need to copy keys here because we mutate in loop
-#                    self.__patch_instance_norm_state_dict(state_dict, net, key.split('.'))
-#                net.load_state_dict(state_dict)
-                
                 
 
     def print_networks(self, verbose):

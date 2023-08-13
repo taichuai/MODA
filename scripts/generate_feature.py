@@ -44,7 +44,7 @@ parser.add_argument('--refiner_ckpt_fp', type=str, default='assets/ckpts/FoCo.pk
 
 args = parser.parse_args()
 opts = parse_config(args.config)
-assign_attributes(opts, args)
+assign_attributes(args, opts)
 
 
 test_opt = FeatureOptions().parse()
@@ -80,7 +80,7 @@ semantic_eye_indices = [x for x in semantic_eye_indices if x not in (468, 473)] 
 eye_vertices_len = len(semantic_eye_indices)
 lip_vertices_len = len(semantic_lip_indices)
 
-sub_name, sub_id = args.test_person.split('\t')
+sub_name = args.test_person
 
 test_opt.lip_vertice_dim = lip_vertices_len * 3
 test_opt.eye_vertice_dim = eye_vertices_len * 3
@@ -134,8 +134,8 @@ for driven_audio in driven_audios:
     t_out_dir = os.path.join(args.out_dir, sub_name)
     os.makedirs(t_out_dir, exist_ok=True)
 
-    sub_info_aud = int(sub_id) if test_opt.subject_head == 'onehot' else template_mean
-    sub_info_rfn = int(sub_id) if faconet_opt.subject_head == 'onehot' else template_mean
+    sub_info_aud = template_mean
+    sub_info_rfn = template_mean
 
     print('==== Generate feautre sequence for', out_name, '====')
     seq_fp = os.path.join(t_out_dir, f'seq_pred-{out_name}.npz')

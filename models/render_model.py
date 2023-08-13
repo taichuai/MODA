@@ -13,7 +13,7 @@ from .componments import render_G
 from .base_model import BaseModel
 
 
-class PortraitRenderModel(BaseModel):
+class RenderModel(BaseModel):
     def __init__(self, opt):
         """Initialize the Render class.
 

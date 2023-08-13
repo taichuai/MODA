@@ -31,18 +31,13 @@ def main(opts):
     render_opt.batch_size = 1             # test code only supports batch_size = 1
     render_opt.phase = 'all'
     render_opt.serial_batches = True
-    render_opt.load_ckpt = -1
     im_size = (512, 512)
 
     assign_attributes(opts, render_opt)
     render_opt = reinit_opt(render_opt)
 
     # create a model given opt.model and other options
-    if not render_opt.model_name_list:
-        render_opt.model_name_list = [render_opt.name]
-    name = render_opt.model_name_list[0]
-    render_opt.name = name
-    example_filenames = os.path.join(render_opt.checkpoints_dir, name, 'examples.pth')
+    example_filenames = opts.example_fp
     if os.path.isfile(example_filenames):
         render_opt.example_filename = example_filenames
     model = create_model(render_opt)
@@ -68,7 +63,7 @@ def main(opts):
 
         tmp_video_fp = os.path.join(opts.output_dir, video_name + '-temp.mp4')
         writer = imageio.get_writer(tmp_video_fp, fps=30)
-
+        
         if hasattr(opts, 'example_fp'):
             print(f'Loading example from {opts.example_fp}')
             if opts.example_fp.endswith('.pth'):
@@ -79,10 +74,8 @@ def main(opts):
         else:
             print(f'Loading example from {opts.example_filename}')
             im_example = torch.load(render_opt.example_filename)['examples'][0]
-        print(im_example.shape)
+        print('Reference shape:', im_example.shape)
 
-        # img_sav_dir = os.path.join(args.output_dir, video_name + '-tmp')
-        # os.makedirs(img_sav_dir, exist_ok=True)
         example = im2tensor(im_example).unsqueeze(0)
         
         for idx, mesh_fp in enumerate(tqdm(img_pwds, desc=f"test data {video_name}")):
@@ -120,12 +113,12 @@ def main(opts):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--config', type=str,  default='config\render_HDTF\WRA_CathyMcMorrisRodgers1_000.yaml', 
+    parser.add_argument('-c', '--config', type=str,  default='configs/renderer/renderer_wtpe.yaml', 
                         help='[!] Override the below parameters from config with cmd args')
     parser.add_argument('--force_up',       default=True)
     parser.add_argument('--sample_id',   type=int,  default=0)
-    parser.add_argument('--video_dir',   default='results/intermediate')
-    parser.add_argument('--output_dir',  type=str, default='results')
+    parser.add_argument('--video_dir',   default='test_results/HDTF_feature/Cathy')
+    parser.add_argument('--output_dir',  type=str, default='test_results/Final/Cathy')
     args = parser.parse_args()
 
     opts = parse_config(args.config)
