@@ -37,7 +37,6 @@ MODA is a unified system for multi-person, diverse, and high-fidelity talking po
 
 1. `2023/08/13` Inference codes have been released.
 
-MODA is a unified system for multi-person, diverse, and high-fidelity talking portrait generation.
 
 ## 🛠️ Installation
 
@@ -72,9 +71,9 @@ optional arguments:
 ## 🚧 TODO
 
 - [ ] Prepare the pretriained-weights
+- [ ] Data preprocessing scripts
 - [ ] Prepare the huggingface🤗 demo
 - [ ] Release the training code
-- [ ] Data preprocessing scripts
 
 ## 🛎 Citation
 
