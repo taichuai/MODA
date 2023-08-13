@@ -1,0 +1,19 @@
+data_dir: repo/dataset/HDTF-semantic_mesh/HDTF
+test_person: "Cathy	071"
+force_up: true
+with_former: true
+driven_audios: 
+  - assets/data/test_audios/00083.wav
+  - assets/data/test_audios/japan_song-clean.wav
+out_dir: test_results/HDTF_feature
+a2f_ckpt_fp: assets/ckpts/MODA.pkl
+refiner_ckpt_fp: assets/ckpts/FaCo.pkl
+
+with_smooth: true
+smooth:
+  head_rot: 4
+  torso: 4
+  head_trans: 6
+  lip: 1.5
+  refine: 2
+  others: 5

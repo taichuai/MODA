@@ -1,0 +1,14 @@
+gpu_ids: 
+  - 0
+use_example: 1
+use_position_encoding: True
+position_encoding_size: 1000
+num_encoding_functions: 6
+batch_size: 1
+n_frames_D: 1
+sample_id: 0
+load_ckpt: assets/ckpts/renderer/Cathy.pth
+example_fp: assets/ckpts/renderer/reference.pth
+
+video_dir: test_results/HDTF_feature/WRA_CathyMcMorrisRodgers1_000/   # parent dir is same as 
+output_dir: test_results/HDTF_render/Cathy

@@ -1,0 +1,8 @@
+person_name: Cathy
+feat:
+  cfg_fp: configs/feature/HDTF.yaml
+  meta_dir: assets/data/meta_dir/Cathy
+  a2f_ckpt_fp: assets/ckpts/MODA.pkl
+  refiner_ckpt_fp: assets/ckpts/FoCo.pkl
+renderer:
+  cfg_fp: configs/renderer/Cathy.yaml

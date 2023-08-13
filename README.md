@@ -15,7 +15,7 @@
   >Yu Li</a><sup>1</sup></nobr>
  <br>
   <nobr><sup>1</sup><a href="https://www.idea.edu.cn">International Digital Economy Academy (IDEA), Shenzhen, China</a>,&nbsp;&nbsp;</nobr>
-  <nobr><sup>2</sup>Vistring Inc., Hangzhou, China</nobr>
+  <nobr><sup>2</sup><a href="https://www.vistring.ai">Vistring Inc., Hangzhou, China</a></nobr>
 </div>
 <br>
 <i>—<strong><a href='https://arxiv.org/abs/2307.10008' target='_blank'>ICCV 2023</a></strong>—</i>
@@ -29,9 +29,27 @@
 
 </div>
 
-## 🚧 TODO
+## 🕊️ Description
 
-Code and data will be comming soon!
+MODA is a unified system for multi-person, diverse, and high-fidelity talking portrait generation.
+
+## 🛠️ Installation
+
+After cloning the repository please install the environment by running the `install.sh` script. It will prepare the MODA for usage. 
+
+```shell
+git clone https://github.com/DreamtaleCore/MODA.git
+cd MODA
+bash ./install.sh
+```
+
+## 🚀 Usage
+
+
+
+## 🚧 Train
+
+Training code and data will be comming soon!
 
 ## 🛎 Citation
 

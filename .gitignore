@@ -1,0 +1,6 @@
+*legacy
+results/*
+test_results/*
+assets/ckpts/*.pkl
+assets/ckpts/renderer/*
+*__pycache__
