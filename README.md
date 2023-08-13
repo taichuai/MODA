@@ -35,7 +35,8 @@ MODA is a unified system for multi-person, diverse, and high-fidelity talking po
 
 ## 🎊 News
 
-1. `2023/08/13` Inference codes have been released.
+* `2023/08/13` Inference codes have been released.
+* `2023/08/13` Data preprocessing scripts have been released.
 
 
 ## 🛠️ Installation
@@ -68,10 +69,21 @@ optional arguments:
   --n_sample N_SAMPLE
 ```
 
+## Dataset preparation
+
+```
+cd data_prepare
+
+python process.py -i your/video/dir -o your/output/dir
+```
+
+More informations please refer to [here](data_prepare/README.md).
+
 ## 🚧 TODO
 
+- [x] Release the inference code
+- [x] Data preprocessing scripts
 - [ ] Prepare the pretriained-weights
-- [ ] Data preprocessing scripts
 - [ ] Prepare the huggingface🤗 demo
 - [ ] Release the training code
 
@@ -87,3 +99,6 @@ If you find our work useful in your research, please consider citing:
   year={2023}
 }
 ```
+
+## 🥂 Acknowledgement
+Our code is based on [LiveSpeechPortrait](https://github.com/YuanxunLu/LiveSpeechPortraits) and [FaceFormer](https://github.com/EvelynFan/FaceFormer).
