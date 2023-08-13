@@ -33,6 +33,12 @@
 
 MODA is a unified system for multi-person, diverse, and high-fidelity talking portrait generation.
 
+## 🎊 News
+
+1. `2023/08/13` Inference codes have been released.
+
+MODA is a unified system for multi-person, diverse, and high-fidelity talking portrait generation.
+
 ## 🛠️ Installation
 
 After cloning the repository please install the environment by running the `install.sh` script. It will prepare the MODA for usage. 
@@ -45,11 +51,30 @@ bash ./install.sh
 
 ## 🚀 Usage
 
+Quick run
+```shell
+python inference.py
+```
 
+Parameters:
+```shell
+usage: Inference entrance for MODA. [-h] [--audio_fp_or_dir AUDIO_FP_OR_DIR] [--person_config PERSON_CONFIG]
+                                    [--output_dir OUTPUT_DIR] [--n_sample N_SAMPLE]
 
-## 🚧 Train
+optional arguments:
+  -h, --help            show this help message and exit
+  --audio_fp_or_dir AUDIO_FP_OR_DIR
+  --person_config PERSON_CONFIG
+  --output_dir OUTPUT_DIR
+  --n_sample N_SAMPLE
+```
 
-Training code and data will be comming soon!
+## 🚧 TODO
+
+- [ ] Prepare the pretriained-weights
+- [ ] Prepare the huggingface🤗 demo
+- [ ] Release the training code
+- [ ] Data preprocessing scripts
 
 ## 🛎 Citation
 
