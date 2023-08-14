@@ -95,11 +95,11 @@ def main(args):
 
 parser = argparse.ArgumentParser(description='Generate dataset for LSP')
 parser.add_argument('-f', '--feature_fp', type=str, help='input feature path',
-                    default='/home/liuyunfei/repo/dataset/HDTF-semantic_mesh/HDTF_zhubo/xiexieli/feature.npz')
+                    default='~/repo/dataset/HDTF-semantic_mesh/HDTF_zhubo/xiexieli/feature.npz')
 parser.add_argument('-s', '--shoulder_fp', type=str, help='input shoulder path',
-                    default='/home/liuyunfei/repo/dataset/HDTF-semantic_mesh/HDTF_zhubo/xiexieli/shoulderv2.npy')
+                    default='~/repo/dataset/HDTF-semantic_mesh/HDTF_zhubo/xiexieli/shoulderv2.npy')
 parser.add_argument('-o', '--output_fp', type=str, help='output dir',
-                    default='/home/liuyunfei/repo/dataset/HDTF-semantic_mesh/HDTF_zhubo/xiexieli/shoulderv2-billboard.npy', )
+                    default='~/repo/dataset/HDTF-semantic_mesh/HDTF_zhubo/xiexieli/shoulderv2-billboard.npy', )
 parser.add_argument('-m',  '--from_3ddfa',   type=bool,  default=True)
 parser.add_argument('-ih', '--img_height',   type=int,   default=512)
 parser.add_argument('-iw', '--img_width',    type=int,   default=512)

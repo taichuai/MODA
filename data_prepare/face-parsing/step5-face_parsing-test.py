@@ -104,15 +104,15 @@ def evaluate(respth='./res/test_res', video_path='data/May-face-centered.avi', c
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate shoudler points')
     parser.add_argument('-i', '--video_in_fp', type=str, help='input video path',
-                        default='/home/liuyunfei/ws/audio2face/LiveSpeechPortraits/datasets/tmp/May-face_centered_60fps.avi')
+                        default='~/ws/audio2face/LiveSpeechPortraits/datasets/tmp/May-face_centered_60fps.avi')
     parser.add_argument('-o', '--output_dir', type=str, help='temp dir for saving intermediate results',
-                        default='/home/liuyunfei/ws/audio2face/LiveSpeechPortraits/dataset/tmp', )
+                        default='~/ws/audio2face/LiveSpeechPortraits/dataset/tmp', )
     parser.add_argument('-s', '--scale', type=float, help='re-scale frame size for saving memory',
                         default=0.25, )
     
     args = parser.parse_args()
 
-    evaluate(video_path=args.video_in_fp, cp='/home/liuyunfei/ws/audio2face/lsp_dataset_preparation/face-parsing/res/cp/79999_iter.pth', 
+    evaluate(video_path=args.video_in_fp, cp='~/ws/audio2face/lsp_dataset_preparation/face-parsing/res/cp/79999_iter.pth', 
             respth=args.output_dir, scale=args.scale)
 
 

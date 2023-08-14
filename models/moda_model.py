@@ -1,40 +1,48 @@
-
+import os
 import torch
 import numpy as np
-import torch.nn as nn
+from .componments import networks
 from .base_model import BaseModel
-from .componments.wav2vec import Wav2Vec2Model
-from .componments.networks import MLP, DualTemporalMoudleV2
+from .componments import moda_net
 
 
 class MODAModel(BaseModel):
     def __init__(self, opt):
-        super().__init__(opt)
-        
-        self.input_size = opt.audio_feat_dim
-        self.audio_head_type = opt.audio_head_type
-        
-        self.hs = opt.hidden_size        # larger parameters
-        if self.audio_head_type == 'wav2vec':
-            self.audio_encoder = Wav2Vec2Model.from_pretrained("facebook/wav2vec2-base-960h")
-            self.audio_encoder.feature_extractor._freeze_parameters()
-            self.audio_encoder.eval()
-            self.audio_encoder_head = MLP(opt.audio_feat_dim, opt.hidden_size, opt.hidden_size, 2)
-        elif self.audio_head_type == 'apc':
-            self.audio_encoder_head = MLP(512 * 4, opt.hidden_size, opt.hidden_size, 2, with_norm=True)
-        elif self.audio_head_type == 'mel':
-            self.audio_encoder_head = MLP(80 * 4,  opt.hidden_size, opt.hidden_size, 4, with_norm=True)
-        else:
-            raise ValueError
-        self.subject_encoder_head = MLP(opt.vertice_dim, opt.hidden_size, 128, 3, with_norm=True)
+        """Initialize the MODA Model class.
 
-        self.temporal_body    = DualTemporalMoudleV2(opt.hidden_size, self.hs, 3, 0, opt.feature_decoder, opt.period, opt.max_seq_len)
+        Parameters:
+            opt (Option class)-- stores all the experiment flags; needs to be a subclass of BaseOptions
+        """
+        BaseModel.__init__(self, opt)
+        self.Tensor = torch.cuda.FloatTensor
+        # specify the models you want to save to the disk. The training/test scripts will call <BaseModel.save_networks> and <BaseModel.load_networks>
+        # define networks 
+        self.model_names = ['MODA']
+        self.MODA = networks.init_net(moda_net.MODANet(opt), init_type='normal', init_gain=0.02, gpu_ids=opt.gpu_ids)
+    
+    def init_paras(self, dataset):
+        opt = self.opt
+        iter_path = os.path.join(self.save_dir, 'iter.txt')
+        start_epoch, epoch_iter = 1, 0
+        ### if continue training, recover previous states
+        if opt.continue_train:        
+            if os.path.exists(iter_path):
+                start_epoch, epoch_iter = np.loadtxt(iter_path , delimiter=',', dtype=int)        
+                print('Resuming from epoch %d at iteration %d' % (start_epoch, epoch_iter))   
+                # change epoch count & update schedule settings
+                opt.epoch_count = start_epoch
+                self.schedulers = [networks.get_scheduler(optimizer, opt) for optimizer in self.optimizers]
+                # print lerning rate
+                lr = self.optimizers[0].param_groups[0]['lr']
+                print('update learning rate: {} -> {}'.format(opt.lr, lr))
+            else:
+                print('not found training log, hence training from epoch 1')
+                
 
-        hs = self.hs*2 if opt.feature_decoder == 'FormerHybrid' else self.hs
-        self.lipmotion_tail   = MLP(hs, opt.lip_vertice_dim,   512, 2, with_norm=True)
-        self.eyemovement_tail = MLP(hs, opt.eye_vertice_dim,   256, 3, with_norm=True)
-        self.headmotion_tail  = MLP(hs, 3+3+1,                 256, 3, with_norm=True)
-        self.torsomotion_tail = MLP(hs, opt.torso_vertice_dim, 256, 3, with_norm=True)
+        total_steps = (start_epoch-1) * len(dataset) + epoch_iter
+        total_steps = total_steps // opt.print_freq * opt.print_freq  
+        
+        return start_epoch, opt.print_freq, total_steps, epoch_iter
     
     def set_input(self, data):
         """Unpack input data from the dataloader and perform necessary pre-processing steps.

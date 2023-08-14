@@ -27,13 +27,13 @@ from scipy.spatial.transform import Rotation as R
 
 parser = argparse.ArgumentParser(description='Normalize facial vertices')
 parser.add_argument('-fi', '--in_vertices_fp',  type=str, help='Input vertices file path.',
-                    default='/home/liuyunfei/repo/dataset/HDTF-semantic_mesh/HDTF_LSP/May-test/feature_raw.npz')
+                    default='~/repo/dataset/HDTF-semantic_mesh/HDTF_LSP/May-test/feature_raw.npz')
 parser.add_argument('-fh', '--in_headpose_fp',  type=str, help='Input headpose file path.', 
-                    default='/home/liuyunfei/repo/dataset/HDTF-semantic_mesh/HDTF_LSP/May-test/headpose.npy')
+                    default='~/repo/dataset/HDTF-semantic_mesh/HDTF_LSP/May-test/headpose.npy')
 parser.add_argument('-o',  '--out_feature_fp', type=str, help='Output feature file path.', 
-                    default='/home/liuyunfei/repo/dataset/HDTF-semantic_mesh/HDTF_LSP/May-test/feature.npz')
+                    default='~/repo/dataset/HDTF-semantic_mesh/HDTF_LSP/May-test/feature.npz')
 parser.add_argument('-v',  '--out_video_fp',   type=str, help='Output result video file path.', 
-                    default='/home/liuyunfei/repo/dataset/HDTF-semantic_mesh/HDTF_LSP/May-test/norm.mp4')
+                    default='~/repo/dataset/HDTF-semantic_mesh/HDTF_LSP/May-test/norm.mp4')
 parser.add_argument('-m',  '--from_3ddfa',   type=bool,  default=True)
 parser.add_argument('-ih', '--img_height',   type=int,   default=512)
 parser.add_argument('-iw', '--img_width',    type=int,   default=512)

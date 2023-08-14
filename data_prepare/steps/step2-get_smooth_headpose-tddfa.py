@@ -154,8 +154,8 @@ def main(args):
 
 parser = argparse.ArgumentParser(description='Extract headpose info')
 parser.add_argument('-c', '--config', type=str, 
-                        default='/home/liuyunfei/ws/audio2face/lsp_dataset_preparation/3DDFA-V2/configs/mb1_120x120.yml')
-parser.add_argument('-i',  '--in_video_fp',    type=str, help='Input video file path.', default='/home/liuyunfei/repo/dataset/HDTF/RD_Radio8_000.mp4')
+                        default='~/ws/audio2face/lsp_dataset_preparation/3DDFA-V2/configs/mb1_120x120.yml')
+parser.add_argument('-i',  '--in_video_fp',    type=str, help='Input video file path.', default='~/repo/dataset/HDTF/RD_Radio8_000.mp4')
 parser.add_argument('-fi', '--in_feature_fp',  type=str, help='Input feature file path.', default='temp/temp.npz')
 parser.add_argument('-fo', '--out_feature_fp', type=str, help='Output feature file path.', default='temp/temp-hp.npy')
 parser.add_argument('-v',  '--out_video_fp',   type=str, help='Output result video file path.', default='temp/temp-hp.mp4')

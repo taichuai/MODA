@@ -17,9 +17,9 @@ import subprocess
 
 parser = argparse.ArgumentParser(description='Extract audio info')
 parser.add_argument('-i', '--in_video_dir', type=str, help='Input video file dir.',
-                    default='/cto_studio/vistring/liuyunfei/repo/dataset/HDTF/')
+                    default='~/repo/dataset/HDTF/')
 parser.add_argument('-o', '--out_data_dir', type=str, help='Output dataset dir.',
-                    default='/home/liuyunfei/repo/dataset/HDTF-processed')
+                    default='~/repo/dataset/HDTF-processed')
 parser.add_argument('-w', '--num_workers', type=int, default=8, 
                     help='Number of workers for downloading')
 parser.add_argument('--use_mp', type=bool, default=True, 
@@ -121,4 +121,4 @@ print('Done.')
 
 
 
-# python process.py -i /cto_studio/vistring/liuyunfei/repo/dataset/HDTF -o /cto_studio/vistring/liuyunfei/repo/dataset/HDTF-semantic_mesh/
+# python process.py -i ~/repo/dataset/HDTF -o ~/repo/dataset/HDTF-semantic_mesh/

@@ -259,11 +259,11 @@ def main(args):
 
 parser = argparse.ArgumentParser(description='Generate dataset for Pix2pix')
 parser.add_argument('-v', '--video_fp', type=str, help='input video path',
-                    default='/home/liuyunfei/repo/dataset/HDTF-semantic_mesh/HDTF_zhubo/xiexieli/video.mp4')
+                    default='~/repo/dataset/HDTF-semantic_mesh/HDTF_zhubo/xiexieli/video.mp4')
 parser.add_argument('-f', '--feature_fp', type=str, help='input feature path',
-                    default='/home/liuyunfei/repo/dataset/HDTF-semantic_mesh/HDTF_zhubo/xiexieli/feature.npz')
+                    default='~/repo/dataset/HDTF-semantic_mesh/HDTF_zhubo/xiexieli/feature.npz')
 parser.add_argument('-o', '--output_dir', type=str, help='output dir',
-                    default='/home/liuyunfei/repo/dataset/HDTF-semantic_mesh/HDTF_zhubo/xiexieli/renderv2', )
+                    default='~/repo/dataset/HDTF-semantic_mesh/HDTF_zhubo/xiexieli/renderv2', )
 parser.add_argument('--train_val_rate', type=float, default=0.8)
 parser.add_argument('--force_update', type=bool, default=False)
 parser.add_argument('-m',  '--from_3ddfa',     type=bool,  default=True)

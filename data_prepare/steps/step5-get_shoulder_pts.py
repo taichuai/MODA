@@ -280,13 +280,13 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Generate shoudler points')
     parser.add_argument('-v', '--video_fp', type=str, help='input video path',
-                        default='/home/liuyunfei/ws/audio2face/LiveSpeechPortraits/datasets/tmp/May-face_centered_60fps.avi')
+                        default='~/ws/audio2face/LiveSpeechPortraits/datasets/tmp/May-face_centered_60fps.avi')
     parser.add_argument('-t', '--tmp_dir', type=str, help='temp dir for saving intermediate results',
-                        default='/home/liuyunfei/ws/audio2face/LiveSpeechPortraits/dataset/tmp', )
+                        default='~/ws/audio2face/LiveSpeechPortraits/dataset/tmp', )
     parser.add_argument('-of', '--output_feat_fp', type=str, help='output dir',
-                        default='/home/liuyunfei/ws/audio2face/LiveSpeechPortraits/dataset/tmp/shoulder.npy', )
+                        default='~/ws/audio2face/LiveSpeechPortraits/dataset/tmp/shoulder.npy', )
     parser.add_argument('-ov', '--output_video_fp', type=str, help='output dir',
-                        default='/home/liuyunfei/ws/audio2face/LiveSpeechPortraits/dataset/tmp/video.mp4', )
+                        default='~/ws/audio2face/LiveSpeechPortraits/dataset/tmp/video.mp4', )
     parser.add_argument('-f', '--face_parsing_dir', type=str, help='face parsing dir',
                         default='face-parsing')
     parser.add_argument('-s', '--scale', type=float, help='re-scale frame size for saving face_parsing memory',

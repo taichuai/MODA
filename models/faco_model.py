@@ -11,7 +11,7 @@ from torch.cuda.amp import autocast as autocast
 
 class FaCoModel(BaseModel):          
     def __init__(self, opt):
-        """Initialize the Feature2Face class.
+        """Initialize the FaCo Model class.
 
         Parameters:
             opt (Option class)-- stores all the experiment flags; needs to be a subclass of BaseOptions

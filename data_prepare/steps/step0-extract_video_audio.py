@@ -39,7 +39,7 @@ try:
 except Exception as e:
     print(e)
 
-tmp_dir = '/home/liuyunfei/repo/lsp_dataset_preparation/tmp'
+tmp_dir = '~/repo/lsp_dataset_preparation/tmp'
 os.makedirs(tmp_dir, exist_ok=True)
 
 vfp = os.path.join(tmp_dir, os.path.basename(args.in_video_fp).split('.')[0] + f'-{args.target_fps}fps.mp4')

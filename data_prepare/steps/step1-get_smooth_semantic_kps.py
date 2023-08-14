@@ -26,7 +26,7 @@ from rich.progress import track
 
 
 parser = argparse.ArgumentParser(description='Extract semantic facial mesh info')
-parser.add_argument('-i', '--in_video_fp',    type=str, help='Input video file path.', default='/home/liuyunfei/repo/dataset/HDTF/RD_Radio8_000.mp4')
+parser.add_argument('-i', '--in_video_fp',    type=str, help='Input video file path.', default='~/repo/dataset/HDTF/RD_Radio8_000.mp4')
 parser.add_argument('-f', '--out_feature_fp', type=str, help='Output feature file path.', default='temp/temp.npz')
 parser.add_argument('-v', '--out_video_fp',   type=str, help='Output result video file path.', default='temp/temp.mp4')
 parser.add_argument('-n_pre',  default=1, type=int, help='the pre frames of smoothing')

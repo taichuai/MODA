@@ -15,7 +15,7 @@ from .base_model import BaseModel
 
 class RenderModel(BaseModel):
     def __init__(self, opt):
-        """Initialize the Render class.
+        """Initialize the Render Model class.
 
         Parameters:
             opt (Option class)-- stores all the experiment flags; needs to be a subclass of BaseOptions
