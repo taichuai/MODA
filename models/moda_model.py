@@ -69,33 +69,7 @@ class MODAModel(BaseModel):
         self.torsomask = torso_mask.reshape((b, 1, 1)).to(self.device)
     
     def forward(self, audio_array, sub_info, frame_num=None):
-        '''
-        Args:
-            audio_features: [b, T, ndim]
-        '''
-        if self.audio_head_type == 'wav2vec':
-            audio_features = self.audio_encoder(audio_array, frame_num=frame_num).last_hidden_state.detach()
-            bs, item_len, ndim = audio_features.shape
-            down_audio_feats = self.audio_encoder_head(audio_features.reshape(-1, ndim)).reshape(bs, item_len, -1)
-        elif self.audio_head_type in ('apc', 'mel'):
-            bs, item_len, ndim = audio_array.shape
-            # 120 fps -> 30 fps
-            audio_features = audio_array.reshape(bs, -1, ndim*4)
-            down_audio_feats = self.audio_encoder_head(audio_features.reshape(-1, ndim*4)).reshape(bs, int(item_len/4), -1)
-            item_len = down_audio_feats.shape[1]
-        else:
-            raise ValueError
-
-        subject_style = self.subject_encoder_head(sub_info)
-
-        output_feat, mu, logvar = self.temporal_body(down_audio_feats, subject_style)
-        
-        pred_lipmotion   = self.lipmotion_tail(output_feat)
-        pred_eyemovement = self.eyemovement_tail(output_feat)
-        pred_headmotion  = self.headmotion_tail(output_feat)    
-        pred_torsomotion = self.torsomotion_tail(output_feat)
-        
-        return pred_lipmotion, pred_eyemovement, pred_headmotion, pred_torsomotion, (mu, logvar)
+        return self.MODA(audio_array, sub_info, frame_num)
     
     @torch.no_grad()
     def generate_sequences(self, audio_feats, sample_rate=16000, fps=30, n_subjects=165, sub_id=0, av_rate=534):
