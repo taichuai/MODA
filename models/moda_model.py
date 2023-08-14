@@ -4,6 +4,7 @@ import numpy as np
 from .componments import networks
 from .base_model import BaseModel
 from .componments import moda_net
+from .componments.losses import MaskedMSELoss, MotionLoss
 
 
 class MODAModel(BaseModel):
@@ -19,6 +20,26 @@ class MODAModel(BaseModel):
         # define networks 
         self.model_names = ['MODA']
         self.MODA = networks.init_net(moda_net.MODANet(opt), init_type='normal', init_gain=0.02, gpu_ids=opt.gpu_ids)
+
+        self.model_names = ['Audio2Feature']
+        self.loss_names = ['total', 'lipmotion', 'eyemovement', 'headmotion', 'torsomotion']
+
+        if self.opt.loss == 'L2+Velocity':
+            self.loss_names += ['lipmotion_vel', 'eyemovement_vel', 'headmotion_vel', 'torsomotion_vel']
+
+        # losses
+        self.featureL2loss = torch.nn.MSELoss().to(self.device)
+        self.maskedL2loss = MaskedMSELoss().to(self.device)
+        self.velocityloss = MotionLoss().to(self.device)
+
+        if self.isTrain:
+            # define only during training time
+            # optimizer
+            self.optimizer = torch.optim.AdamW([{'params': self.MODA.parameters(), 'initial_lr': opt.lr}], lr=opt.lr, betas=(0.9, 0.99))
+            self.optimizers.append(self.optimizer)
+            
+            if opt.continue_train:
+                self.resume_training()
     
     def init_paras(self, dataset):
         opt = self.opt
@@ -44,6 +65,40 @@ class MODAModel(BaseModel):
         
         return start_epoch, opt.print_freq, total_steps, epoch_iter
     
+    def resume_training(self):
+        opt = self.opt
+        ### if continue training, recover previous states            
+        print('Resuming from epoch %s ' % (opt.load_epoch))   
+        # change epoch count & update schedule settings
+        opt.epoch_count = int(opt.load_epoch)
+        self.schedulers = [networks.get_scheduler(optimizer, opt) for optimizer in self.optimizers]
+        # print lerning rate
+        lr = self.optimizers[0].param_groups[0]['lr']
+        print('update learning rate: {} -> {}'.format(opt.lr, lr))
+
+    def calculate_loss(self):
+        """ calculate loss in detail, only forward pass included""" 
+        self.loss = 0
+        if 'L2' in self.opt.loss:
+            self.loss_lipmotion   = self.featureL2loss(self.pred_lipmotion,   self.target_lipmotion)
+            self.loss = self.loss + 5 * self.loss_lipmotion
+            self.loss_eyemovement = self.featureL2loss(self.pred_eyemovement, self.target_eyemovement)
+            self.loss_headmotion  = self.featureL2loss(self.pred_headmotion,  self.target_headmotion)
+            self.loss_torsomotion = self.maskedL2loss(self.pred_torsomotion,  self.target_torsomotion, self.torsomask)
+            self.loss = self.loss + self.loss_eyemovement + self.loss_headmotion + self.loss_torsomotion
+        
+        if 'Velocity' in self.opt.loss:
+            self.loss_vel = 0
+            self.loss_lipmotion_vel   = self.velocityloss(self.pred_lipmotion,   self.target_lipmotion)
+            self.loss_vel = self.loss_vel + 5 * self.loss_lipmotion_vel
+            self.loss_eyemovement_vel = self.velocityloss(self.pred_eyemovement, self.target_eyemovement)
+            self.loss_headmotion_vel  = self.velocityloss(self.pred_headmotion,  self.target_headmotion)
+            self.loss_torsomotion_vel = self.velocityloss(self.pred_torsomotion, self.target_torsomotion)
+            self.loss_vel = self.loss_vel + self.loss_eyemovement_vel + self.loss_headmotion_vel + 0.5*self.loss_torsomotion_vel
+            self.loss = self.loss + self.loss_vel
+            
+        self.loss_total = self.loss
+
     def set_input(self, data):
         """Unpack input data from the dataloader and perform necessary pre-processing steps.
         data contains: audio_samples, one_hot, audio_stride, target_point, target_headmotion
@@ -70,6 +125,25 @@ class MODAModel(BaseModel):
     
     def forward(self, audio_array, sub_info, frame_num=None):
         return self.MODA(audio_array, sub_info, frame_num)
+    
+    def backward(self):
+        """Calculate losses, gradients, and update network weights; called in every training iteration"""
+        self.calculate_loss()
+        self.loss.backward()
+        
+    def optimize_parameters(self):
+        """Update network weights; it will be called in every training iteration."""
+        if self.audio_feats.shape[0] < 2: return        # skip batchnorm issue
+        self.optimizer.zero_grad()   # clear optimizer parameters grad
+        self.forward()               # forward pass
+        self.backward()              # calculate loss and gradients
+        self.optimizer.step()        # update gradients 
+            
+    @torch.no_grad()
+    def validate(self):
+        """ validate process """
+        self.forward()
+        self.calculate_loss()
     
     @torch.no_grad()
     def generate_sequences(self, audio_feats, sample_rate=16000, fps=30, n_subjects=165, sub_id=0, av_rate=534):
