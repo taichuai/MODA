@@ -97,25 +97,6 @@ class BaseOptions():
         for name in datasets:
             self.opt.dataset_names.append(name)
         
-        if self.isTrain:
-            self.opt.train_dataset_names = np.loadtxt(os.path.join(self.opt.dataroot, 
-                                                                   self.opt.dataset_names[0], 'render',
-                                                                   self.opt.train_dataset_names), dtype=np.str).tolist()
-            if type(self.opt.train_dataset_names) == str:
-                self.opt.train_dataset_names = [self.opt.train_dataset_names]
-            self.opt.validate_dataset_names = np.loadtxt(os.path.join(self.opt.dataroot, 
-                                                                      self.opt.dataset_names[0], 'render',
-                                                                      self.opt.validate_dataset_names), dtype=np.str).tolist()
-            if type(self.opt.validate_dataset_names) == str:
-                self.opt.validate_dataset_names = [self.opt.validate_dataset_names]
-            
-        else:
-            test_datasets = self.opt.test_dataset_names.split(',')
-            self.opt.test_dataset_names = []
-            for name in test_datasets:
-                self.opt.test_dataset_names.append(name)
-        
-        
         args = vars(self.opt)
 
         print('------------ Options -------------')

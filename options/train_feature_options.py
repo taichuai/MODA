@@ -28,7 +28,7 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--ref_sub_names'         , type=str  , default='May, Obama'    , help='chooses reference datasets.') ,
         parser.add_argument('--dataset_type'          , type=str  , default='Train'         , help='[Train or Test]')        ,
         parser.add_argument('--n_epochs'              , type=int  , default=1000            , help='number of epochs')       ,
-        parser.add_argument('--lr_policy'             , type=str  , default='cyclic'        , help='learning rate policy. [linear | step | plateau | cosine]'),
+        parser.add_argument('--lr_policy'             , type=str  , default='plateau'       , help='learning rate policy. [linear | step | plateau | cosine]'),
         parser.add_argument('--lr'                    , type=float, default=1e-3            , help='initial learning rate for adam'),
         parser.add_argument('--gamma'                 , type=float, default=0.2             , help='step learning rate gamma'),
         parser.add_argument('--lr_decay_iters'        , type=int  , default=250             , help='multiply by a gamma every lr_decay_iters iterations'),

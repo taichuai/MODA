@@ -64,6 +64,10 @@ class FaCoModel(BaseModel):
                                                       'initial_lr': lr}], lr=lr, betas=(beta1, beta2))
                 self.optimizers.append(self.optimizer_D)
 
+            self.schedulers = [networks.get_scheduler(optimizer, opt) for optimizer in self.optimizers]
+            if opt.continue_train:
+                self.resume_training()
+
     
     def init_paras(self, dataset):
         opt = self.opt
@@ -92,21 +96,19 @@ class FaCoModel(BaseModel):
     def set_input(self, data, data_info=None):
         """Unpack input data from the dataloader and perform necessary pre-processing steps.
         """
-        _, one_hot, self.av_rate, vertices_info, _, _, _, meta  = data  #[:4]
+        self.audio_feats, vertices_info, headmotion_info, torsomotion_info, torso_mask, _, meta  = data
         
+        self.audio_feats = self.audio_feats.to(self.device)
         for k, v in meta.items():
-            if k in ['MeanPoint']: continue
+            if k in ['Reference']: continue
             meta[k] = [x[0] for x in v]
-        if self.opt.subject_head == 'onehot':
-            self.subject_id = one_hot.to(self.device)
-        else:
-            self.subject_id = meta['MeanPoint'].reshape(meta['MeanPoint'].shape[0], -1).to(self.device)
+        self.subject_id  = meta['Reference'].reshape(meta['Reference'].shape[0], -1).to(self.device)
         
         b, seq, t_dim = vertices_info.shape[:3]
         vertices_info = vertices_info.reshape((b, seq, t_dim//3, 3))
 
-        self.input_lip = vertices_info[:, :, meta['Lip']].reshape((b, seq, -1))
-        self.input_eye = vertices_info[:, :, meta['Eye']].reshape((b, seq, -1))
+        self.input_lip = vertices_info[:, :, meta['Lip']].reshape((b, seq, -1)).to(self.device)
+        self.input_eye = vertices_info[:, :, meta['Eye']].reshape((b, seq, -1)).to(self.device)
 
         self.target = vertices_info.reshape((b, seq, -1)).to(self.device)
 
@@ -127,8 +129,8 @@ class FaCoModel(BaseModel):
     def backward_D(self):
         """Calculate GAN loss for the discriminator"""
         # GAN loss
-        real_AB = torch.cat((self.input, self.target),    dim=-1)
-        fake_AB = torch.cat((self.input, self.fake_pred), dim=-1)
+        real_AB = torch.cat((self.input_lip, self.input_eye, self.target),    dim=-1)
+        fake_AB = torch.cat((self.input_lip, self.input_eye, self.fake_pred), dim=-1)
         pred_real = self.D(real_AB, self.subject_id)
         pred_fake = self.D(fake_AB.detach(), self.subject_id)
         
@@ -146,10 +148,10 @@ class FaCoModel(BaseModel):
         self.loss_D.backward()
     
     def calculate_loss(self):
-        real_AB = torch.cat((self.input, self.target),    dim=-1)
-        fake_AB = torch.cat((self.input, self.fake_pred), dim=-1)
-        pred_real = self.MeshRefiner_D(real_AB, self.subject_id)
-        pred_fake = self.MeshRefiner_D(fake_AB, self.subject_id)
+        real_AB = torch.cat((self.input_lip, self.input_eye, self.target),    dim=-1)
+        fake_AB = torch.cat((self.input_lip, self.input_eye, self.fake_pred), dim=-1)
+        pred_real = self.D(real_AB, self.subject_id)
+        pred_fake = self.D(fake_AB, self.subject_id)
         loss_G_GAN = self.criterionGAN(pred_fake, True)
         # L1, vgg, style loss
         loss_l1 = self.criterionL1(self.fake_pred, self.target) * self.opt.lambda_L1
@@ -178,13 +180,13 @@ class FaCoModel(BaseModel):
         ## forward
         self.forward()
         # update D
-        self.set_requires_grad(self.MeshRefiner_D, True)  # enable backprop for D
+        self.set_requires_grad(self.D, True)  # enable backprop for D
         self.optimizer_D.zero_grad()     # set D's gradients to zero    
         self.backward_D()                # calculate gradients for D
         self.optimizer_D.step()          # update D's weights
             
         # update G
-        self.set_requires_grad(self.MeshRefiner_D, False)  # D requires no gradients when optimizing G
+        self.set_requires_grad(self.D, False)  # D requires no gradients when optimizing G
         self.optimizer_G.zero_grad()        # set G's gradients to zero
         self.backward_G()                   # calculate graidents for G
         self.optimizer_G.step()             # udpate G's weights

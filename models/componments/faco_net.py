@@ -51,8 +51,10 @@ class PointDiscriminator(nn.Module):
         
         if opt.subject_head == 'onehot':
             self.subject_encoder = MLP(opt.n_subjects, 256, 256, 3)
-        elif opt.subject_head == 'mesh':
+        elif opt.subject_head == 'point':
             self.subject_encoder = MLP(opt.vertice_dim, 256, 128, 3)
+        else:
+            raise NotImplementedError()
         self.mesh_encoder = MLP(in_dim+out_dim, 256, 256, 2)
 
         self.classifier = MLP(256, 1, 128, 3)

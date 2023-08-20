@@ -2,32 +2,51 @@ import os
 import copy
 import torch
 import argparse
+import numpy as np
 from tqdm import tqdm
 from rich import print
 from models import create_model
 from rich.progress import track
 from datasets import create_dataset
 from utils.visualizer import Visualizer
+from options.train_render_options import TrainOptions
 from utils.util import assign_attributes, parse_config
-from options.train_feature_options import TrainOptions
+
+
+def reinit_opt(opt):
+    if type(opt.dataset_names) == str:
+        try:
+            opt.dataset_names = [opt.dataset_names]
+            opt.train_dataset_names = np.loadtxt(os.path.join(opt.dataroot, 
+                                                            opt.dataset_names[0], 'render',
+                                                            opt.train_dataset_names), dtype=np.str).tolist()
+            opt.validate_dataset_names = np.loadtxt(os.path.join(opt.dataroot, 
+                                                                opt.dataset_names[0], 'render',
+                                                                opt.validate_dataset_names), dtype=np.str).tolist()
+            if type(opt.validate_dataset_names) == str:
+                opt.validate_dataset_names = [opt.validate_dataset_names]
+        except Exception as e:
+            print(e)
+    
+    if type(opt.cand_dataset_names) == str:
+        opt.cand_dataset_names = [opt.cand_dataset_names]
+    return opt
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--config',  type=str,  default='configs/train/faco.yaml')
+parser.add_argument('--config',  type=str,  default='configs/train/renderer/Cathy.yaml')
 args = parser.parse_args()
 
 train_opt = TrainOptions().parse()
 
 opts = parse_config(args.config)
 assign_attributes(opts, train_opt)
+train_opt = reinit_opt(train_opt)
 
-train_opt.subject_name = opts.train_sub_names
 dataset_train = create_dataset(train_opt)
 
 val_opt = copy.deepcopy(train_opt)
-val_opt.data_mode = 'Val'
-
-val_opt.subject_name = opts.test_sub_names
+val_opt.data_mode = val_opt.dataset_type = 'Val'
 dataset_val = create_dataset(val_opt)
 
 len_train = len(dataset_train)
@@ -35,13 +54,10 @@ len_val = len(dataset_val)
 
 print('### Training   dataset len:', len_train)
 print('### Validation dataset len:', len_val)
-print('### N subjects:', train_opt.n_subjects)
 
 model = create_model(train_opt)
 model.setup(train_opt)
 model.print_networks(verbose=True)
-if os.path.exists(train_opt.load_epoch):
-    model.load_networks(train_opt.load_epoch)
 
 viz = Visualizer(train_opt)
 
@@ -57,14 +73,18 @@ for epoch in range(train_opt.n_epochs):
         losses = model.get_current_losses()
         viz.plot_current_errors({'train/'+ k: v for k, v in losses.items()})
         if step % 500 == 0:
+            # print(losses)
             show_losses = ''
             for k, v in losses.items():
                 show_losses += f' {k}: {v:.4f}'
-            if len(show_losses) > 70: show_losses = show_losses[:70] + ' ...'
             t_bar.set_description(f'Training   (epoch={epoch:02d}/{train_opt.n_epochs}) | {show_losses} ==>')
+        
     
     cur_lr = model.update_learning_rate()
     viz.logger.log({'lr': cur_lr})
+
+    visuals = model.get_current_visuals()
+    viz.save_images(os.path.join(viz.log_dir, 'image'), visuals, image_path=f'epoch-{epoch}')
     
     model.eval()
     cur_val_errors = []
@@ -78,14 +98,13 @@ for epoch in range(train_opt.n_epochs):
         cur_val_errors.append(losses['total'])
         step += 1
     
-    if epoch > 40:
-        cur_val_error_ave = sum(cur_val_errors) / len(cur_val_errors)
-        if cur_val_error_ave < min_val_error:
-            min_val_error = cur_val_error_ave
-            model.save_networks(epoch=epoch, is_best=True)
-            print(f'Best model saved. epoch={epoch}, val_error={min_val_error}')
+    cur_val_error_ave = sum(cur_val_errors) / len(cur_val_errors)
+    if cur_val_error_ave < min_val_error:
+        min_val_error = cur_val_error_ave
+        model.save_networks(epoch=epoch, is_best=True)
+        print(f'Best model saved. epoch={epoch}, val_error={min_val_error}')
 
-        if (epoch + 1) % 100 == 0 or 'finetune' in train_opt.model.lower():
-            model.save_networks(epoch=epoch)
-            print(f'Model saved. epoch={epoch}')
+    if (epoch + 1) % 10 == 0 or 'finetune' in train_opt.model.lower():
+        model.save_networks(epoch=epoch)
+        print(f'Model saved. epoch={epoch}')
     

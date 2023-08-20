@@ -1,0 +1,12 @@
+task: TrainFaCoModel
+gpu_ids: [0,]
+batch_size: 32
+n_epochs: 5000
+dataset_mode: audio2repr
+model: faco
+subject_head: point
+
+dataroot: assets/dataset/HDTF
+train_sub_names: train.txt
+test_sub_names: test.txt
+ref_sub_names: train.txt

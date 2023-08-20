@@ -55,6 +55,9 @@ class RenderDataset(BaseDataset):
         else:
             self.item_list = []
 
+        with open(os.path.join(self.dataset_root, self.item_list), 'r') as fid:
+            self.item_list = [x.strip() for x in fid.readlines()]
+
         self.mp_drawing_styles = mp.solutions.drawing_styles
         self.mp_connections = mp.solutions.face_mesh_connections
         
@@ -141,7 +144,7 @@ class RenderDataset(BaseDataset):
             b = h - u                           # bottom
             a = np.random.rand() * 30 - 15      # angle
         else:
-            l, r, b, a = 0, w, h, 0
+            l, r, b, a, u, b = 0, w, h, 0, 0, h
         
         tgt_image = np.asarray(Image.open(os.path.join(self.data_root_tar, self.item_list[data_index] + '.png')))
         tgt_image = cv2.resize(tgt_image, (512, 512)).astype(np.float32)/255.
@@ -166,7 +169,7 @@ class RenderDataset(BaseDataset):
         t_embd = self.positional_encoding(torch.from_numpy(t_tens[None, ...])).float()
         # print('t_embd.shape:', t_embd.shape)
         
-        return_list = {'feature_map': feature_map, 'cand_image': self.th_img_candidates, 't_embd': t_embd, 'tgt_image': tgt_image, 'weight_mask': weight_mask}
+        return_list = {'mesh': feature_map, 'example': self.th_img_candidates, 'time_position': t_embd, 'face': tgt_image, 'weight_mask': weight_mask}
            
         return return_list
 

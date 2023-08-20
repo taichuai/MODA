@@ -4,5 +4,7 @@ test_results/*
 assets/ckpts/*.pkl
 assets/ckpts/renderer/*
 *__pycache__
-
+repo*
+assets/dataset*
 data_prepare/face-parsing/data/*
+assets/data/*

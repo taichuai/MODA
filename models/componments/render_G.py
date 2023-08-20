@@ -15,12 +15,8 @@ class Render_G(nn.Module):
         self.tD = 1
         n_mesh_channels = 3
         n_face_channels = 3
-        n_flow_channels = 2
         n_example_channels = n_face_channels * opt.use_example
         input_nc = n_mesh_channels + n_example_channels + ext_channel
-        #input_nc = self.tD * n_mesh_channels + n_example_channels
-        if self.tD == 2:
-            input_nc += n_flow_channels
 
         # define net G
         if opt.size == 'small':

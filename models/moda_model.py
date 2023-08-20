@@ -21,7 +21,6 @@ class MODAModel(BaseModel):
         self.model_names = ['MODA']
         self.MODA = networks.init_net(moda_net.MODANet(opt), init_type='normal', init_gain=0.02, gpu_ids=opt.gpu_ids)
 
-        self.model_names = ['Audio2Feature']
         self.loss_names = ['total', 'lipmotion', 'eyemovement', 'headmotion', 'torsomotion']
 
         if self.opt.loss == 'L2+Velocity':
@@ -37,6 +36,7 @@ class MODAModel(BaseModel):
             # optimizer
             self.optimizer = torch.optim.AdamW([{'params': self.MODA.parameters(), 'initial_lr': opt.lr}], lr=opt.lr, betas=(0.9, 0.99))
             self.optimizers.append(self.optimizer)
+            self.schedulers = [networks.get_scheduler(optimizer, opt) for optimizer in self.optimizers]
             
             if opt.continue_train:
                 self.resume_training()
@@ -103,19 +103,16 @@ class MODAModel(BaseModel):
         """Unpack input data from the dataloader and perform necessary pre-processing steps.
         data contains: audio_samples, one_hot, audio_stride, target_point, target_headmotion
         """
-        self.audio_feats, vertices_info, headmotion_info, torsomotion_info, torso_mask, meta  = data  #[:4]
-        if self.motion_mode:
-            self.target_info = data[-1]
+        self.audio_feats, vertices_info, headmotion_info, torsomotion_info, torso_mask, _, meta  = data  #[:4]
+  
         self.audio_feats = self.audio_feats.to(self.device)
         for k, v in meta.items():
-            if k in ['MeanPoint']: continue
+            if k in ['Reference']: continue
             meta[k] = [x[0] for x in v]
-        if self.opt.subject_head == 'onehot':
-            self.subject_id  = self.one_hot.to(self.device)
-        else:
-            self.subject_id  = meta['MeanPoint'].reshape(meta['MeanPoint'].shape[0], -1).to(self.device)
+        self.subject_id  = meta['Reference'].reshape(meta['Reference'].shape[0], -1).to(self.device)
 
         b, seq, t_dim = vertices_info.shape[:3]
+        self.seq_len = seq
         vertices_info = vertices_info.reshape((b, seq, t_dim//3, 3))
         self.target_lipmotion   = vertices_info[:, :, meta['Lip']].reshape((b, seq, -1)).to(self.device)    
         self.target_eyemovement = vertices_info[:, :, meta['Eye']].reshape((b, seq, -1)).to(self.device)  
@@ -123,8 +120,15 @@ class MODAModel(BaseModel):
         self.target_torsomotion = torsomotion_info.to(self.device)
         self.torsomask = torso_mask.reshape((b, 1, 1)).to(self.device)
     
-    def forward(self, audio_array, sub_info, frame_num=None):
-        return self.MODA(audio_array, sub_info, frame_num)
+    def forward(self):
+
+        pred_lip, pred_eye, pred_head, pred_torso = self.MODA(self.audio_feats, self.subject_id, frame_num=self.seq_len)[:4]
+
+        self.pred_lipmotion   = pred_lip
+        self.pred_eyemovement = pred_eye
+        self.pred_headmotion  = pred_head
+        self.pred_torsomotion = pred_torso
+
     
     def backward(self):
         """Calculate losses, gradients, and update network weights; called in every training iteration"""
@@ -174,7 +178,7 @@ class MODAModel(BaseModel):
             
             frame_num = int(audio_feature_clip.shape[1] / av_rate)
 
-            pred_lip, pred_eye, pred_head, pred_torso = self.forward(audio_feature_clip, sub_info, frame_num=frame_num)[:4]
+            pred_lip, pred_eye, pred_head, pred_torso = self.MODA(audio_feature_clip, sub_info, frame_num=frame_num)[:4]
             predictions_lipmotion.append(pred_lip.squeeze())
             predictions_eyemovement.append(pred_eye.squeeze())
             predictions_headmotion.append(pred_head.squeeze())

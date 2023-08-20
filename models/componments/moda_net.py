@@ -8,7 +8,7 @@ from .networks import MLP, DualTemporalMoudleV2
 
 class MODANet(nn.Module):
     def __init__(self, opt):
-        super().__init__(opt)
+        super().__init__()
         
         self.input_size = opt.audio_feat_dim
         self.audio_head_type = opt.audio_head_type

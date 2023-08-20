@@ -43,10 +43,8 @@ class Audio2ReprDataset(BaseDataset):
         self.fps          = opt.FPS
         self.max_seq_len  = opt.max_seq_len
         self.use_norm     = opt.use_norm
-        self.rand_stretch = opt.rand_stretch
-        self.subject_name_lst  = [x.strip() for x in opt.subject_name.split(',')]
-        ref_subject_name       = opt.subject_name if opt.ref_sub_names is None else opt.ref_sub_names
-        self.ref_sub_name_lst  = [x.strip() for x in ref_subject_name.split(',')]
+        self.subject_name_lst  = self.parse_subject_names(os.path.join(self.dataroot, opt.subject_name))
+        self.ref_sub_name_lst  = self.subject_name_lst 
         self.n_subjects        = len(self.subject_name_lst)
         self.mp_connections    = mp.solutions.face_mesh_connections
         self.frame_jump_stride = opt.frame_jump_stride
@@ -67,19 +65,30 @@ class Audio2ReprDataset(BaseDataset):
         self.sample_start = []
         self.total_len    = 0
         self.data_list    = []
-        self.subject_len  = [''] * len(self.subject_name_lst)
+        self.subject_len  = []
         for idx, x in enumerate(tqdm(self.subject_name_lst, desc='Loading dataset')):
-            subject_data = self.prepare_subject_dataset(self.dataroot, x, self.ref_sub_name_lst[idx])
+            try:
+                subject_data = self.prepare_subject_dataset(self.dataroot, x, self.ref_sub_name_lst[idx])
+            except Exception as e:
+                continue
             self.data_list.append(subject_data)
             t_len = subject_data[2].shape[0] - self.max_seq_len
-            self.subject_len[idx] = t_len
+            self.subject_len.append(t_len)
             if idx == 0: self.sample_start.append(0)
-            else: self.sample_start.append(self.sample_start[-1] + self.subject_len[idx - 1] - 1)
+            else: self.sample_start.append(self.sample_start[-1] + self.subject_len[-2] - 1)
             self.total_len += np.int32(np.floor(t_len / self.frame_jump_stride))
+
+            # if len(self.data_list) > 5: break
 
         if hasattr(self, 'processor'):
             del self.processor      # release it 
     
+    def parse_subject_names(self, fp):
+        with open(fp, 'r') as fid:
+            lines = fid.readlines()
+            sub_names = [x.split('\t')[0].strip() for x in lines]
+        return sub_names
+
     @staticmethod
     def interp(x, resize_len, mode='bilinear'):
             """
@@ -117,11 +126,11 @@ class Audio2ReprDataset(BaseDataset):
         
         # here reference face vertoces are used to calcute the mean facial mesh as subject info
         facial_info_ref = np.load(os.path.join(ref_data_dir, 'feature.npz'))
-        face_vert_ref  = facial_info_ref['Vertices']
-        face_head_ref  = facial_info_ref['Headposes']
-        face_trans_ref = facial_info_ref['Transposes']
-        face_scale_ref = facial_info_ref['Scales'][..., None]
-        torso_info_ref = np.load(os.path.join(ref_data_dir, 'shoulder-billboard.npy'))
+        face_vert_ref   = facial_info_ref['Vertices']
+        face_head_ref   = facial_info_ref['Headposes']
+        face_trans_ref  = facial_info_ref['Transposes']
+        face_scale_ref  = facial_info_ref['Scales'][..., None]
+        torso_info_ref  = np.load(os.path.join(ref_data_dir, 'shoulder-billboard.npy'))
 
         audio_array_fp  = os.path.join(data_dir, 'audio_processed.npy')
         if os.path.exists(audio_array_fp):
@@ -189,13 +198,6 @@ class Audio2ReprDataset(BaseDataset):
         current_frame = index_real - self.sample_start[file_index] + int(np.random.randint(0, self.frame_jump_stride//2))
         seq_len = self.max_seq_len
 
-        if self.rand_stretch:
-            stretch_ratio = np.random.rand() * 0.5 + 0.75
-        else:
-            stretch_ratio = 1
-        
-        seq_len = int(seq_len * stretch_ratio)
-
         av_rate      = self.data_list[file_index][1]
         audio_arrays = self.data_list[file_index][0][current_frame*av_rate: (current_frame + seq_len)*av_rate] 
         target_mesh  = self.data_list[file_index][2][current_frame:  (current_frame + seq_len)]
@@ -205,12 +207,12 @@ class Audio2ReprDataset(BaseDataset):
         target_scales    = self.data_list[file_index][11][current_frame: (current_frame + seq_len)]
         target_torso     = self.data_list[file_index][14][current_frame: (current_frame + seq_len)]
 
-        audio_arrays = self.interp(audio_arrays, int(seq_len*av_rate/stretch_ratio))
-        target_mesh  = self.interp(target_mesh,  int(seq_len/stretch_ratio))
-        target_headpose   = self.interp(target_headpose,  int(seq_len/stretch_ratio))
-        target_transpose  = self.interp(target_transpose, int(seq_len/stretch_ratio))
-        target_scales = self.interp(target_scales, int(seq_len/stretch_ratio))
-        target_torso  = self.interp(target_torso,  int(seq_len/stretch_ratio))
+        audio_arrays      = self.interp(audio_arrays,     int(seq_len*av_rate))
+        target_mesh       = self.interp(target_mesh,      int(seq_len))
+        target_headpose   = self.interp(target_headpose,  int(seq_len))
+        target_transpose  = self.interp(target_transpose, int(seq_len))
+        target_scales     = self.interp(target_scales,    int(seq_len))
+        target_torso      = self.interp(target_torso,     int(seq_len))
 
         target_headmotion = torch.cat([target_headpose, target_transpose, target_scales], dim=-1)
 
@@ -247,7 +249,7 @@ class Audio2ReprDataset(BaseDataset):
         headmotion_mean = target_headmotion_mean.reshape((target_headmotion_mean.shape[0], -1))
         torso_mean      = target_torso_mean.reshape((target_torso_mean.shape[0], -1))
 
-        return audio_arrays, target_mesh, target_headmotion, target_torso, torso_mask, torso_mean, {'Eye': self.semantic_eye_indices, 'Lip': self.semantic_lip_indices, 'MeanMesh': subject_mesh, 'MeanHeadmotion': headmotion_mean}
+        return audio_arrays, target_mesh, target_headmotion, target_torso, torso_mask, torso_mean, {'Eye': self.semantic_eye_indices, 'Lip': self.semantic_lip_indices, 'Reference': subject_mesh, 'MeanHeadmotion': headmotion_mean}
     
     def get_meanstd(self, index, use_sub_id=False):
         if not use_sub_id:
@@ -372,18 +374,16 @@ if __name__ == '__main__':
 
 
     data_cfg = EasyDict(dict(
-        dataroot = '/cto_studio/vistring/liuyunfei/repo/dataset/HDTF-semantic_mesh/HDTF_LSP',
+        dataroot = 'assets/dataset/HDTF',
         sample_rate = 16000,
         FPS = 30,
         frame_jump_stride = 300,
         max_seq_len = 600,
         use_norm = True,
-        subject_name  = 'May,McStay,Nadella,Obama,Obama1,Obama21',
-        ref_sub_names = 'May,McStay,Nadella,Obama,Obama1,Obama21',
-        rand_stretch  = True
+        subject_name  = 'train.txt',
     ))
 
-    avd = AudioVisualV5Dataset(data_cfg)
+    avd = Audio2ReprDataset(data_cfg)
 
     OUT_DIR = 'test_results_tmp_train'
     os.makedirs(OUT_DIR, exist_ok=True)

@@ -1,0 +1,14 @@
+task: TrainRenderCathy
+batch_size: 4
+dataset_mode: render
+model: render
+n_epochs: 40
+use_example: 1
+use_temporal_encoding: true
+dataroot: assets/dataset/HDTF/
+dataset_names: 
+  - WRA_CathyMcMorrisRodgers1_000
+cand_dataset_names: 
+  - WRA_CathyMcMorrisRodgers1_000
+train_dataset_names: train_pix_list.txt
+validate_dataset_names: val_pix_list.txt
