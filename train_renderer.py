@@ -77,6 +77,7 @@ for epoch in range(train_opt.n_epochs):
             show_losses = ''
             for k, v in losses.items():
                 show_losses += f' {k}: {v:.4f}'
+            if len(show_losses) > 70: show_losses = show_losses[:70] + ' ...'
             t_bar.set_description(f'Training   (epoch={epoch:02d}/{train_opt.n_epochs}) | {show_losses} ==>')
         
     
