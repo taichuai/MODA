@@ -152,7 +152,6 @@ class MODAModel(BaseModel):
     @torch.no_grad()
     def generate_sequences(self, audio_feats, sample_rate=16000, fps=30, n_subjects=165, sub_id=0, av_rate=534):
 
-        self.subject_encoder_head.eval()
         step = sample_rate*10
         win_size = step*2
         predictions_lipmotion   = []
@@ -172,6 +171,7 @@ class MODAModel(BaseModel):
             # print(sub_info.shape)
         
         i = 0
+        audio_feats = audio_feats.to(self.device)
         while True:
             print('Current state:', i*step, i*step+win_size, audio_feats.shape[1])
             audio_feature_clip = audio_feats[:, i*step: i*step+win_size]
