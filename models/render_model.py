@@ -59,7 +59,7 @@ class RenderModel(BaseModel):
         # define only during training time
         if self.isTrain:
             # define losses names
-            self.loss_names_G = ['L1', 'VGG', 'Style', 'G_GAN', 'G_FM', ] #, "loss_FFL"]
+            self.loss_names_G = ['total', 'L1', 'VGG', 'Style', 'G_GAN', 'G_FM', ] #, "loss_FFL"]
             
             # criterion
             self.criterionMaskL1 = MaskedL1Loss().to(self.device)
@@ -118,7 +118,7 @@ class RenderModel(BaseModel):
                                                     betas=(beta1, beta2))
                     self.optimizers.append(self.optimizer_D_mouth)
         
-        self.loss_names = self.loss_names_G + self.loss_names_D
+            self.loss_names = self.loss_names_G + self.loss_names_D
         
 
 
@@ -210,8 +210,7 @@ class RenderModel(BaseModel):
             self.mouth_feature_maps = torch.cat([self.mouth_mesh, self.mouth_example], dim=1)
             self.mouth_pred = self.crop_mouth(self.fake_pred, self.mouth_bbox)
 
-
-    def backward_G(self):
+    def calculate_loss(self):
         """Calculate GAN and other loss for the generator"""
 
         real_AB = torch.cat((self.input_feature_maps, self.tgt_image), dim=1)
@@ -231,13 +230,20 @@ class RenderModel(BaseModel):
         loss_list = [loss_l1, loss_vgg, loss_style, loss_G_GAN, loss_FM]
         self.loss_L1, self.loss_VGG, self.loss_Style, self.loss_G_GAN, self.loss_G_FM = loss_l1, loss_vgg, loss_style, loss_G_GAN, loss_FM
 
+        self.loss_total = sum(loss_list)
+        return loss_list
+
+    def backward_G(self):
+
+        loss_list = self.calculate_loss()
+        
         # combine loss and calculate gradients
         if not self.opt.fp16:
-            self.loss_G = loss_G_GAN + loss_l1 + loss_vgg + loss_style + loss_FM 
+            self.loss_G = self.loss_G_GAN + self.loss_L1 + self.loss_VGG + self.loss_Style + self.loss_G_FM 
             self.loss_G.backward()
         else:
             with autocast():
-                self.loss_G = loss_G_GAN + loss_l1 + loss_vgg + loss_style + loss_FM 
+                self.loss_G = self.loss_G_GAN + self.loss_L1 + self.loss_VGG + self.loss_Style + self.loss_G_FM 
             self.scaler.scale(self.loss_G).backward()
 
         self.loss_dict = {**self.loss_dict, **dict(zip(self.loss_names_G, loss_list))}
@@ -343,6 +349,11 @@ class RenderModel(BaseModel):
             self.scaler.step(self.optimizer_G)
             self.scaler.update()
 
+    @torch.no_grad()
+    def validate(self):
+        """ validate process """
+        self.forward()
+        self.calculate_loss()
 
     def inference(self, mesh, example, flow=None):
         """ inference process """
