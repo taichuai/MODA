@@ -51,10 +51,14 @@ bash ./install.sh
 
 ## 🚀 Usage
 
+Download pretrained models from [here](https://drive.google.com/drive/folders/1AE5BOQ6o0CqHIdKcbRJg1-MbJLKXqvlu?usp=drive_link). Then put all files and subfolders to `assets/`.
+
 Quick run
 ```shell
 python inference.py
 ```
+
+Then a few minutes later ☕, the results will be generated at `results/`.
 
 Parameters:
 ```shell
@@ -69,7 +73,7 @@ optional arguments:
   --n_sample N_SAMPLE
 ```
 
-## Dataset preparation
+## 🍏 Dataset preparation
 
 ```
 cd data_prepare
@@ -79,13 +83,47 @@ python process.py -i your/video/dir -o your/output/dir
 
 More informations please refer to [here](data_prepare/README.md).
 
+## 🏃 Train
+
+### Train the MODA model and FaCo model
+
+```shell
+python train.py --config configs/train/moda.yaml
+```
+
+```shell
+python train.py --config configs/train/faco.yaml
+```
+
+### Train the renderer for new avatar
+
+```shell
+python train_renderer.py --config configs/train/renderer/Cathy.yaml
+```
+
+### Link your models
+
+```shell
+ln -s your_absolute_dir/TrainMODAVel/Audio2FeatureVertices/best_MODA.pkl assets/ckpts/MODA.pkl
+```
+
+```shell
+ln -s your_absolute_dir/TrainFaCoModel/Audio2FeatureVertices/best_FaCo_G.pkl assets/ckpts/FaCo.pkl
+```
+
+```shell
+ln -s your_absolute_dir/Render/TrainRenderCathy/Render/best_Render_G.pkl assets/ckpts/renderer/Cathy.pth
+```
+
+Then update the ckpt filepath in your config files.
+
 ## 🚧 TODO
 
 - [x] Release the inference code
 - [x] Data preprocessing scripts
-- [ ] Prepare the pretriained-weights
+- [x] Prepare the pretriained-weights
+- [x] Release the training code
 - [ ] Prepare the huggingface🤗 demo
-- [ ] Release the training code
 
 ## 🛎 Citation
 
