@@ -52,7 +52,7 @@ def main(opts):
         video_fp = os.path.join(opts.video_dir, vn)
         video_name = os.path.basename(video_fp).split('.')[0].replace('-feature', '')
         
-        out_video_fp = os.path.join(opts.output_dir, video_name + f'{opts.sample_id:02d}' + '-render.mp4')
+        out_video_fp = os.path.join(opts.output_dir, video_name + f'#{opts.sample_id:02d}' + '-render.mp4')
         if os.path.exists(out_video_fp): continue
         
         # Read frame from given video and condition frame
