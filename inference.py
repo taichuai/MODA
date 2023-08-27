@@ -1,9 +1,7 @@
 import os
-import sys
 import yaml
 import argparse
 from easydict import EasyDict
-sys.path.append(os.path.dirname(__file__))
 
 
 def gen_feature(audio_fp_or_dir, cfg, out_dir, n_sample):
@@ -60,6 +58,8 @@ os.system('export PYTHONPATH=.')
 
 with open(args.person_config, 'r') as fid:
     person_cfg = EasyDict(yaml.safe_load(fid))
+
+os.system('export PYTHONPATH=.')
 
 inter_dirs = gen_feature(args.audio_fp_or_dir, person_cfg,
                          os.path.join(args.output_dir, 'inter'), args.n_sample)
