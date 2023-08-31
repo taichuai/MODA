@@ -17,8 +17,7 @@ class MODANet(nn.Module):
         if self.audio_head_type == 'wav2vec':
             self.audio_encoder = Wav2Vec2Model.from_pretrained("facebook/wav2vec2-base-960h")
             self.audio_encoder.feature_extractor._freeze_parameters()
-            self.audio_encoder.eval()
-            self.audio_encoder_head = MLP(opt.audio_feat_dim, opt.hidden_size, opt.hidden_size, 2)
+            self.audio_encoder_head = MLP(opt.audio_feat_dim, opt.hidden_size, opt.hidden_size, 2, with_norm=True)
         elif self.audio_head_type == 'apc':
             self.audio_encoder_head = MLP(512 * 4, opt.hidden_size, opt.hidden_size, 2, with_norm=True)
         elif self.audio_head_type == 'mel':
@@ -29,7 +28,7 @@ class MODANet(nn.Module):
 
         self.temporal_body    = DualTemporalMoudleV2(opt.hidden_size, self.hs, 3, 0, opt.feature_decoder, opt.period, opt.max_seq_len)
 
-        hs = self.hs*2 if opt.feature_decoder == 'FormerHybrid' else self.hs
+        hs = self.hs*2
         self.lipmotion_tail   = MLP(hs, opt.lip_vertice_dim,   512, 2, with_norm=True)
         self.eyemovement_tail = MLP(hs, opt.eye_vertice_dim,   256, 3, with_norm=True)
         self.headmotion_tail  = MLP(hs, 3+3+1,                 256, 3, with_norm=True)
@@ -41,9 +40,8 @@ class MODANet(nn.Module):
             audio_features: [b, T, ndim]
         '''
         if self.audio_head_type == 'wav2vec':
-            audio_features = self.audio_encoder(audio_array, frame_num=frame_num).last_hidden_state.detach()
-            bs, item_len, ndim = audio_features.shape
-            down_audio_feats = self.audio_encoder_head(audio_features.reshape(-1, ndim)).reshape(bs, item_len, -1)
+            audio_features = self.audio_encoder(audio_array, frame_num=frame_num).last_hidden_state
+            down_audio_feats = self.audio_encoder_head(audio_features)
         elif self.audio_head_type in ('apc', 'mel'):
             bs, item_len, ndim = audio_array.shape
             # 120 fps -> 30 fps
