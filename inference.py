@@ -21,11 +21,11 @@ def gen_feature(audio_fp_or_dir, cfg, out_dir, n_sample):
         print('#'*5, f'Processing [{i}/{n_sample}]')
         print('#'*60)
 
-        cmd_str = f'python scripts/generate_feature.py --config {cfg.feat.cfg_fp} ' + \
-                f'--meta_dir {cfg.feat.meta_dir} --test_person {cfg.person_name} ' + \
-                f'--driven_audios {audio_files_str} --out_dir {t_out_dir} ' + \
-                f'--a2f_ckpt_fp {cfg.feat.a2f_ckpt_fp} ' + \
-                f'--refiner_ckpt_fp {cfg.feat.refiner_ckpt_fp} '
+        cmd_str = f'export PYTHONPATH=. && python scripts/generate_feature.py --config {cfg.feat.cfg_fp} ' + \
+                  f'--meta_dir {cfg.feat.meta_dir} --test_person {cfg.person_name} ' + \
+                  f'--driven_audios {audio_files_str} --out_dir {t_out_dir} ' + \
+                  f'--a2f_ckpt_fp {cfg.feat.a2f_ckpt_fp} ' + \
+                  f'--refiner_ckpt_fp {cfg.feat.refiner_ckpt_fp} '
         
         os.system(cmd_str)
         out_dir_lst.append(os.path.join(t_out_dir, cfg.person_name))
@@ -39,9 +39,9 @@ def render_video(input_dirs, output_dir, cfg):
         print('#'*5, f'Processing [{idx}/{len(input_dirs)} => {input_dir}]')
         print('#'*60)
 
-        cmd_str = f'python scripts/generate_video.py --config {cfg.renderer.cfg_fp} ' + \
-                f'--video_dir {input_dir} --output_dir {output_dir} ' + \
-                f'--sample_id {idx}'
+        cmd_str = f'export PYTHONPATH=. && python scripts/generate_video.py --config {cfg.renderer.cfg_fp} ' + \
+                  f'--video_dir {input_dir} --output_dir {output_dir} ' + \
+                  f'--sample_id {idx}'
         
         os.system(cmd_str)
 
@@ -58,8 +58,6 @@ os.system('export PYTHONPATH=.')
 
 with open(args.person_config, 'r') as fid:
     person_cfg = EasyDict(yaml.safe_load(fid))
-
-os.system('export PYTHONPATH=.')
 
 inter_dirs = gen_feature(args.audio_fp_or_dir, person_cfg,
                          os.path.join(args.output_dir, 'inter'), args.n_sample)
