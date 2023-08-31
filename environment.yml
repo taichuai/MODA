@@ -144,6 +144,7 @@ dependencies:
       - flatbuffers
       - fonttools
       - grpcio
+      - gdown
       - imageio
       - importlib-metadata
       - importlib-resources
