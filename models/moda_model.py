@@ -28,8 +28,8 @@ class MODAModel(BaseModel):
 
         # losses
         self.featureL2loss = torch.nn.MSELoss().to(self.device)
-        self.maskedL2loss = MaskedMSELoss().to(self.device)
-        self.velocityloss = MotionLoss().to(self.device)
+        self.maskedL2loss  = MaskedMSELoss().to(self.device)
+        self.velocityloss  = MotionLoss().to(self.device)
 
         if self.isTrain:
             # define only during training time
@@ -112,7 +112,7 @@ class MODAModel(BaseModel):
         self.subject_id  = meta['Reference'].reshape(meta['Reference'].shape[0], -1).to(self.device)
 
         b, seq, t_dim = vertices_info.shape[:3]
-        self.seq_len = seq
+        self.seq_len  = seq
         vertices_info = vertices_info.reshape((b, seq, t_dim//3, 3))
         self.target_lipmotion   = vertices_info[:, :, meta['Lip']].reshape((b, seq, -1)).to(self.device)    
         self.target_eyemovement = vertices_info[:, :, meta['Eye']].reshape((b, seq, -1)).to(self.device)  
@@ -128,7 +128,6 @@ class MODAModel(BaseModel):
         self.pred_eyemovement = pred_eye
         self.pred_headmotion  = pred_head
         self.pred_torsomotion = pred_torso
-
     
     def backward(self):
         """Calculate losses, gradients, and update network weights; called in every training iteration"""
