@@ -32,24 +32,24 @@ class BaseOptions():
         parser.add_argument('--checkpoints_dir', type=str, default='repo/checkpoints/TalkingHead/Audio2Feature', help='models are saved here')  
 
         # dataset parameters
-        parser.add_argument('--dataset_names',   type=str, default='HDTF')
-        parser.add_argument('--dataroot',        type=str, default='repo/dataset/HDTF-semantic_mesh')
-        parser.add_argument('--data_mode',       type=str, default='Train', help='|Train|Val|')
-        parser.add_argument('--valid_part',      type=str, default='Lips', help='|Eyes|Lips|Iris|All')
-        parser.add_argument('--num_threads',     default=4, type=int, help='# threads for loading data')
-        parser.add_argument('--batch_size',      type=int, default=4, help='input batch size')
-        parser.add_argument('--loss',            type=str, default='L2', help='|GMM|L2|')
-        parser.add_argument('--sequence_length', type=int, default=240, help='length of training frames in each iteration')
-        parser.add_argument('--serial_batches',  type=bool, default=False, help='Load sequence with order')
+        parser.add_argument('--dataset_names',   type=str,  default='HDTF')
+        parser.add_argument('--dataroot',        type=str,  default='repo/dataset/HDTF-semantic_mesh')
+        parser.add_argument('--data_mode',       type=str,  default='Train', help='|Train|Val|')
+        parser.add_argument('--valid_part',      type=str,  default='Lips',  help='|Eyes|Lips|Iris|All')
+        parser.add_argument('--num_threads',     default=4, type=int,        help='# threads for loading data')
+        parser.add_argument('--batch_size',      type=int,  default=4,       help='input batch size')
+        parser.add_argument('--loss',            type=str,  default='L2',    help='|GMM|L2|')
+        parser.add_argument('--sequence_length', type=int,  default=240,     help='length of training frames in each iteration')
+        parser.add_argument('--serial_batches',  type=bool, default=False,   help='Load sequence with order')
         
         # data setting parameters
-        parser.add_argument('--FPS',               type=int, default=30, help='video fps')
-        parser.add_argument('--sample_rate',       type=int, default=16000, help='audio sample rate')
+        parser.add_argument('--FPS',               type=int,  default=30,    help='video fps')
+        parser.add_argument('--sample_rate',       type=int,  default=16000, help='audio sample rate')
         parser.add_argument('--rand_index',        type=bool, default=False, help='add rand perturbetion to dataloader')
-        parser.add_argument('--use_norm',          type=bool, default=True, help='use normalized 3d features.')      # default is True
-        parser.add_argument('--time_frame_length', type=int, default=600)
-        parser.add_argument('--frame_jump_stride', type=int, default=300)
-        parser.add_argument('--max_dataset_size',  type=int, default=5000)
+        parser.add_argument('--use_norm',          type=bool, default=True,  help='use normalized 3d features.')      # default is True
+        parser.add_argument('--time_frame_length', type=int,  default=600)
+        parser.add_argument('--frame_jump_stride', type=int,  default=200)
+        parser.add_argument('--max_dataset_size',  type=int,  default=5000)
 
         # model setting parameters
         parser.add_argument("--pretrained_faceformer",    type=str, default='audio2face/FaceFormer/vocaset/vocaset.pth')
@@ -87,23 +87,23 @@ class BaseOptions():
         parser.add_argument('--LSTM_sequence_length', type=int, default=60)
 
         # Wavenet parameters
-        parser.add_argument('--A2L_wavenet_residual_layers',    type=int, default=7, help='residual layer numbers')
-        parser.add_argument('--A2L_receptive_field',            type=int, default=10, help='receptive field for WavNet')
-        parser.add_argument('--A2L_wavenet_residual_blocks',    type=int, default=2, help='residual block numbers')
-        parser.add_argument('--A2L_wavenet_dilation_channels',  type=int, default=128, help='dilation convolution channels')
-        parser.add_argument('--A2L_wavenet_residual_channels',  type=int, default=128, help='residual channels')
-        parser.add_argument('--A2L_wavenet_skip_channels',      type=int, default=256, help='skip channels')      
-        parser.add_argument('--A2L_wavenet_kernel_size',        type=int, default=2, help='dilation convolution kernel size')
-        parser.add_argument('--A2L_wavenet_use_bias',           type=bool, default=True, help='whether to use bias in dilation convolution')
-        parser.add_argument('--A2L_wavenet_cond',               type=bool, default=True, help='whether use condition input')
-        parser.add_argument('--A2L_wavenet_cond_channels',      type=int, default=512, help='whether use condition input')
-        parser.add_argument('--A2L_wavenet_input_channels',     type=int, default=12, help='input channels')        # 
-        parser.add_argument('--A2L_GMM_ncenter',                type=int, default=1, help='gaussian distribution numbers, 1 for single gaussian distribution')
-        parser.add_argument('--A2L_GMM_ndim',                   type=int, default=12, help='dimension of each gaussian, usually number of pts')
+        parser.add_argument('--A2L_wavenet_residual_layers',    type=int,   default=7, help='residual layer numbers')
+        parser.add_argument('--A2L_receptive_field',            type=int,   default=10, help='receptive field for WavNet')
+        parser.add_argument('--A2L_wavenet_residual_blocks',    type=int,   default=2, help='residual block numbers')
+        parser.add_argument('--A2L_wavenet_dilation_channels',  type=int,   default=128, help='dilation convolution channels')
+        parser.add_argument('--A2L_wavenet_residual_channels',  type=int,   default=128, help='residual channels')
+        parser.add_argument('--A2L_wavenet_skip_channels',      type=int,   default=256, help='skip channels')      
+        parser.add_argument('--A2L_wavenet_kernel_size',        type=int,   default=2, help='dilation convolution kernel size')
+        parser.add_argument('--A2L_wavenet_use_bias',           type=bool,  default=True, help='whether to use bias in dilation convolution')
+        parser.add_argument('--A2L_wavenet_cond',               type=bool,  default=True, help='whether use condition input')
+        parser.add_argument('--A2L_wavenet_cond_channels',      type=int,   default=512, help='whether use condition input')
+        parser.add_argument('--A2L_wavenet_input_channels',     type=int,   default=12, help='input channels')        # 
+        parser.add_argument('--A2L_GMM_ncenter',                type=int,   default=1, help='gaussian distribution numbers, 1 for single gaussian distribution')
+        parser.add_argument('--A2L_GMM_ndim',                   type=int,   default=12, help='dimension of each gaussian, usually number of pts')
         parser.add_argument('--A2L_GMM_sigma_min',              type=float, default=0.03, help='minimal gaussian sigma values')
-        parser.add_argument('--attention_d_model',              type=int, default=32, help='transformer d model')
-        parser.add_argument('--attention_N',                    type=int, default=2, help='transformer N')
-        parser.add_argument('--attention_n_heads',              type=int, default=2, help='n heads')
+        parser.add_argument('--attention_d_model',              type=int,   default=32, help='transformer d model')
+        parser.add_argument('--attention_N',                    type=int,   default=2, help='transformer N')
+        parser.add_argument('--attention_n_heads',              type=int,   default=2, help='n heads')
         
         # additional parameters
         parser.add_argument('--verbose',         action='store_true', help='if specified, print more debugging information')
