@@ -31,10 +31,12 @@
 
 ## 🕊️ Description
 
-MODA is a unified system for multi-person, diverse, and high-fidelity talking portrait generation.
+MODA is a unified system for multi-person, diverse, and high-fidelity talking portrait generation system.
 
 ## 🎊 News
 
+* `2023/08/31` Training codes have been released.
+* `2023/08/31` Pretrained models have been released.
 * `2023/08/13` Inference codes have been released.
 * `2023/08/13` Data preprocessing scripts have been released.
 
@@ -50,8 +52,6 @@ bash ./install.sh
 ```
 
 ## 🚀 Usage
-
-Download pretrained models from [here](https://drive.google.com/drive/folders/1AE5BOQ6o0CqHIdKcbRJg1-MbJLKXqvlu?usp=drive_link). Then put all files and subfolders to `assets/`.
 
 Quick run
 ```shell
@@ -124,6 +124,7 @@ Then update the ckpt filepath in your config files.
 - [x] Prepare the pretriained-weights
 - [x] Release the training code
 - [ ] Prepare the huggingface🤗 demo
+- [ ] Releaes the processed HDTF data
 
 ## 🛎 Citation
 
