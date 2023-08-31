@@ -493,7 +493,7 @@ class TemporalAlignedBlock(nn.Module):
         self.register_buffer('memory_mask', memory_mask)
     
     def forward(self, xa_in, xs_in):
-        emb_with_pos = self.ppe(torch.stack([xs_in]*xa_in.shape[1], dim=1))
+        emb_with_pos = self.ppe(torch.stack([xs_in]*xa_in.shape[1], dim=1)+xa_in)
         tgt_mask = self.biased_mask[:, :emb_with_pos.shape[1], :emb_with_pos.shape[1]].clone().detach()
         tgt_mask = torch.cat([tgt_mask]*emb_with_pos.shape[0]*4, dim=0)
         memory_mask = self.memory_mask[:emb_with_pos.shape[1], :xa_in.shape[1]].clone().detach()
@@ -566,7 +566,7 @@ class TemporalVAEBlock(nn.Module):
 
 
 class DualTemporalMoudleV2(nn.Module):
-    def __init__(self, dim_in, dim_hidden, n_layers, dropout=0, type='LSTM', period=30, seq_len=600) -> None:
+    def __init__(self, dim_in, dim_hidden, n_layers, dropout=0, type='RNN', period=30, seq_len=600) -> None:
         super().__init__()
         self.decoder_type = type
         if self.decoder_type == 'RNN':
